@@ -1,0 +1,71 @@
+import { db } from "./firebase"; // Adjust this import to your Firebase config file
+import {
+  doc,
+  collection,
+  collectionGroup,
+  addDoc,
+  getDocs,
+  updateDoc,
+  query,
+  where,
+  setDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+
+export const updateItem = async (
+  id,
+  itemName,
+  itemType,
+  quantity,
+  expiryDate
+) => {
+  try {
+    await updateDoc(doc(db, "inventory", id), {
+      itemName,
+      itemType,
+      quantity,
+      expiryDate,
+      updatedAt: serverTimestamp(),
+    });
+    return { success: true, message: "Item updated successfully." };
+  } catch (error) {
+    console.error("Error updating item:", error);
+    return {
+      success: false,
+      message: "An error occurred while updating the item.",
+    };
+  }
+};
+
+export const createItem = async (itemName, itemType, quantity, expiryDate) => {
+  try {
+    await addDoc(collection(db, "inventory"), {
+      itemName,
+      itemType,
+      quantity,
+      expiryDate,
+      createdAt: serverTimestamp(),
+    });
+    return { success: true, message: "Item created successfully." };
+  } catch (error) {
+    console.error("Error creating item:", error);
+    return {
+      success: false,
+      message: "An error occurred while creating the item.",
+    };
+  }
+};
+
+export const getItems = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "inventory"));
+    const items = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return items;
+  } catch (error) {
+    console.error("Error fetching items:", error);
+    return [];
+  }
+};
